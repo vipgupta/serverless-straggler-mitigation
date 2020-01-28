@@ -162,31 +162,21 @@ def gemm_coded(A, B, blocks_per_parity, s3_key, completion_pct=.7, encode_A=True
     t_dec = time.time() - t_dec_start # Total stage 3 time
     
     """Final step: Specify the systematic part (i.e., all non-parity blocks) of the result"""
-    # Define output dimensions
+    # Determine output dimensions
     if encode_A:
         C_num_rows = A.shape[0]
     else:
         C_num_rows = A.shape[0] - np_A * A.shard_sizes[0]
-        
     if encode_B:
         C_num_cols = B.shape[0]
     else:
         C_num_cols = B.shape[0] - np_B * B.shard_sizes[0]
     
-    C_shard_sizes = (A.shard_sizes[0], B.shard_sizes[0])    
+    # Create the output matrix containing only the systematic part of the result
     get_systematic_part = systematicize(C_coded, blocks_per_parity)
+    C_shard_sizes = (A.shard_sizes[0], B.shard_sizes[0])
     C = matrix.BigMatrix(s3_key, shape=(C_num_rows, C_num_cols), shard_sizes=C_shard_sizes, parent_fn=get_systematic_part)
-    C.delete() #<- needed??
-    
-    # Run jobs <- TODO this whole section's not needed though...??? <- try with and without
-    to_read = C.block_idxs
-    total_systematicize_workers = len(to_read)
-    fs_done_systematicize = []
-    futures_systematicize = pwex.map(lambda x: get_block_wrapper(C, x), to_read)
-    completed_systematicize_workers = 0
-    while completed_systematicize_workers < total_systematicize_workers:
-        fs_done_systematicize, _ = pywren.wait(futures_systematicize, return_when=ANY_COMPLETED)
-        completed_systematicize_workers = len(fs_done_systematicize)
+    C.delete() # Only needed if you reuse the same s3_key (if the blocks already exist, no work will be done here)
     return C, t_enc, t_comp, t_dec
 
 def gemm_recompute(A, B, thresh, s3_key):
