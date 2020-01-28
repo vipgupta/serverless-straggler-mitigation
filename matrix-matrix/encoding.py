@@ -1,6 +1,6 @@
 """
 File:        encoding.py
-Authors:     Dominic Carrano and Vipul Gupta
+Authors:     Vipul Gupta and Dominic Carrano
 Created:     January 2019
 
 Implementation of encoding for a locally recoverable product code.
@@ -97,7 +97,7 @@ def start_encode_mtx(M, blocks_per_parity, s3_key):
     # Create the coded matrix object
     coding_fn = make_coding_function(M, blocks_per_parity)
     M_coded = matrix.BigMatrix(s3_key, shape=coded_shape, shard_sizes=M.shard_sizes, write_header=True, parent_fn=coding_fn)
-    M_coded.delete()
+    M_coded.delete() # Only needed if you reuse the same s3_key (if the blocks already exist, no work will be done here)
     
     # Generate encoding indices
     encode_idx = []

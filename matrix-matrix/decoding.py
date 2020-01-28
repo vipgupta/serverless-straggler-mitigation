@@ -1,6 +1,6 @@
 """
 File:        decoding.py
-Authors:     Dominic Carrano and Vipul Gupta
+Authors:     Vipul Gupta and Dominic Carrano
 Created:     January 2019
 
 Decoding of a locally recoverable product code.
