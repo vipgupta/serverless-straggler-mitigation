@@ -231,9 +231,10 @@ def gemm_recompute(A, B, thresh, s3_key):
     """Stage 1: Compute "thresh" percentage of the results"""
     t_comp_start = time.time()
     pwex = pywren.lambda_executor()
-    futures = pwex.map(lambda x: pywren_gemm(x, A, B, C, num_col_blocks), C.block_idxs)
-    while len(futures_dones) < thresh * len(futures):
-        pywren.wait(futures, return_when=ANY_COMPLETED)
+    futures, num_done = pwex.map(lambda x: pywren_gemm(x, A, B, C, num_col_blocks), C.block_idxs), 0
+    while num_done < thresh * len(futures):
+        fs_dones, _ = pywren.wait(futures, return_when=ANY_COMPLETED)
+        num_done = len(fs_dones)
     t_comp = time.time() - t_comp_start # Total stage 1 time
 
     """Stage 2: Recompute straggling workers (the last 1-thresh percent of jobs)"""
