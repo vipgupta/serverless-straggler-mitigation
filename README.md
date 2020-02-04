@@ -1,6 +1,6 @@
 # Serverless Straggler Mitigation
 
-Matrix multiplication for serverless cloud computing with built-in straggler mitigation techniques. 
+Matrix multiplication for serverless cloud computing with built-in straggler mitigation techniques. Running these files would require the pywren (http://pywren.io/) and the numpywren (https://github.com/Vaishaal/numpywren) packages to be installed.
 
 ## What is this?
 
